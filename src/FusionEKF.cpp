@@ -35,7 +35,7 @@ FusionEKF::FusionEKF() {
       * Finish initializing the FusionEKF.
       * Set the process and measurement noises
     */
-    H_laser_ << 1, 0, 0, 0,    //from section 10 lesson 5
+    H_laser_ << 1, 0, 0, 0,    //from section 10 lesson 5 (Measurement Function)
             0, 1, 0, 0;
 
     H_radar_ << 1, 1, 0, 0,
@@ -48,14 +48,14 @@ FusionEKF::FusionEKF() {
             0, 0, 1, 0,
             0, 0, 0, 1;
 
-    ekf_.P_ = MatrixXd(4, 4);// 4x4 matrix (covariance)
+    ekf_.P_ = MatrixXd(4, 4);// 4x4 matrix (state covariance)
     ekf_.P_ << 1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1000, 0,
             0, 0, 0, 1000;
 
-    //set the acceleration noise components
-    noise_ax = 9;//provided in quiz as 9 in seciont 13 lesson 5 (sigmax^2)
+    //set the acceleration noise components in Q Matrix
+    noise_ax = 9;//provided in quiz as 9 in section 13 lesson 5
     noise_ay = 9;//provided in quiz as 9
 
 }
@@ -80,14 +80,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         */
         // first measurement
         cout << "EKF: " << endl;
-        ekf_.x_ = VectorXd(4);
-        ekf_.x_ << 1, 1, 1, 1;// this value is important for the RMSE
+        ekf_.x_ = VectorXd(4);//declaring  x vector
+        ekf_.x_ << 1, 1, 1, 1;// this value is important for the RMSE on the first frame
 
         if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
             /**
             Convert radar from polar to cartesian coordinates and initialize state.
             */
-            //just set ekf_.x_(0) to ro*cos(theta)
             float rho = measurement_pack.raw_measurements_(0);
             float theta = measurement_pack.raw_measurements_(1);
             float rho_dot = measurement_pack.raw_measurements_(2);
@@ -105,6 +104,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
             ekf_.x_(1) = measurement_pack.raw_measurements_(1);
 
         }
+        //setting initial timestamp
         previous_timestamp_ = measurement_pack.timestamp_;
         // done initializing, no need to predict or update
         is_initialized_ = true;
@@ -142,6 +142,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 
     ekf_.Predict();
+
 
     /*****************************************************************************
      *  Update
